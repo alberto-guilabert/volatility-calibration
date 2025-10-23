@@ -31,7 +31,7 @@ This repository includes:
 ├── heston_vanilla_pricer.py      # Vectorized Heston pricer (Gauss–Laguerre)
 ├── heston_calibration.py         # Main calibration script (DE + L-BFGS-B)
 └── SPX_17_10_25.xlsx             # Example dataset
-
+```
 
 ## 📚 References
 
@@ -44,3 +44,8 @@ This repository includes:
 
 - Albrecher, H., Mayer, P., Schoutens, W., & Tistaert, J. (2007). *The Little Heston Trap.*  
   **Wilmott Magazine**, January, 83–92.
+
+- Ortiz Ramírez, A., Venegas Martínez, F., & Martínez Palacios, M. T. V. (2021).  
+  *Parameter calibration of stochastic volatility Heston’s model: constrained optimization vs. differential evolution.*  
+  **Contaduría y Administración**, 67(1), 309.  
+  [doi:10.22201/fca.24488410e.2022.2789](https://doi.org/10.22201/fca.24488410e.2022.2789)
