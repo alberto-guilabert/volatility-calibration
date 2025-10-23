@@ -23,7 +23,6 @@ This repository includes:
 ---
 
 ## 📁 Repository Structure
-.
 ├── black_scholes_calculator.py   # Black–Scholes price, vega, and IV solver
 ├── convert_df.py                 # Excel/CSV adapter for Bloomberg-style IV tables
 ├── heston_vanilla_pricer.py      # Vectorized Heston pricer (Gauss–Laguerre)
