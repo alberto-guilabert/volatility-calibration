@@ -23,6 +23,8 @@ This repository includes:
 ---
 
 ## 📁 Repository Structure
+
+```bash
 .
 ├── black_scholes_calculator.py   # Black–Scholes price, vega, and IV solver
 ├── convert_df.py                 # Excel/CSV adapter for Bloomberg-style IV tables
