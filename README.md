@@ -30,4 +30,4 @@ This repository includes:
 ├── convert_df.py                 # Excel/CSV adapter for Bloomberg-style IV tables
 ├── heston_vanilla_pricer.py      # Vectorized Heston pricer (Gauss–Laguerre)
 ├── heston_calibration.py         # Main calibration script (DE + L-BFGS-B)
-└── SPX_17_10_25.xlsx             # Example dataset (not included)
+└── SPX_17_10_25.xlsx             # Example dataset
