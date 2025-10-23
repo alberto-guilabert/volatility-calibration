@@ -31,3 +31,16 @@ This repository includes:
 ├── heston_vanilla_pricer.py      # Vectorized Heston pricer (Gauss–Laguerre)
 ├── heston_calibration.py         # Main calibration script (DE + L-BFGS-B)
 └── SPX_17_10_25.xlsx             # Example dataset
+
+
+## 📚 References
+
+- Heston, S. L. (1993). *A Closed-Form Solution for Options with Stochastic Volatility with Applications to Bond and Currency Options.*  
+  **The Review of Financial Studies**, 6(2), 327–343.  
+  [doi:10.1093/rfs/6.2.327](https://doi.org/10.1093/rfs/6.2.327)
+
+- Gatheral, J. (2006). *The Volatility Surface: A Practitioner’s Guide.*  
+  Wiley Finance Series.
+
+- Albrecher, H., Mayer, P., Schoutens, W., & Tistaert, J. (2007). *The Little Heston Trap.*  
+  **Wilmott Magazine**, January, 83–92.
