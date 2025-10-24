@@ -47,5 +47,5 @@ This repository includes:
 
 - Ortiz Ramírez, A., Venegas Martínez, F., & Martínez Palacios, M. T. V. (2021).  
   *Parameter calibration of stochastic volatility Heston’s model: constrained optimization vs. differential evolution.*  
-  **Contaduría y Administración**, 67(1), 309.  
+  **Accounting and Management**, 67(1), 309.  
   [doi:10.22201/fca.24488410e.2022.2789](https://doi.org/10.22201/fca.24488410e.2022.2789)
