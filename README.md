@@ -12,7 +12,7 @@ This repository includes:
 
 ---
 
-## ✨ Features
+## Features
 
 - **Fast and vectorized**: prices many strikes per maturity with a single CF evaluation.  
 - **Stable characteristic function** implementation (Heston trap mitigations).  
@@ -22,7 +22,7 @@ This repository includes:
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```bash
 .
@@ -33,7 +33,7 @@ This repository includes:
 └── SPX_17_10_25.xlsx             # Example dataset
 ```
 
-## 📚 References
+## References
 
 - Heston, S. L. (1993). *A Closed-Form Solution for Options with Stochastic Volatility with Applications to Bond and Currency Options.*  
   **The Review of Financial Studies**, 6(2), 327–343.  
