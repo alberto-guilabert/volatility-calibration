@@ -8,8 +8,6 @@ This repository includes:
 - **Excel/CSV adapter** for converting Bloomberg-style IV tables into a long-format DataFrame.  
 - A complete **calibration workflow** using Differential Evolution + L-BFGS-B, with bid/ask and smile visualization.
 
-> ⚠️ For research and educational purposes only. Validate before production use.
-
 ---
 
 ## Features
