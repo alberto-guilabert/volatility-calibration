@@ -14,9 +14,9 @@ References
 
 import numpy as np
 from numpy.polynomial.laguerre import laggauss
-from datetime import datetime
 from functools import lru_cache
 import matplotlib.pyplot as plt
+import cProfile, pstats, io
 
 
 # ============================ LIGHT OPTIMIZATIONS ============================
@@ -42,7 +42,6 @@ def _laggauss_cached(N: int):
 
 
 # ============================================================================
-
 def heston_cf(u, s0, T, r, q, v0, kappa, theta, sigma, rho, lambd, which):
     """
     Log-price characteristic function under the Heston model.
@@ -178,22 +177,37 @@ def vanilla_price(
 
 
 # ============================================================================
-
 if __name__ == "__main__":
+    params = {
+        'kappa': 2,
+        'theta': 0.0314,
+        'sigma': 1.2,
+        'v0': 0.04125,
+        'rho': -0.73
+    }
+
     # Example benchmark
-    s0 = 150.0
-    T = 1.0
+    s0 = 1
+    T = 2
     r = 0.03
     q = 0.01
+    kmin = 0.7
+    kmax = 1.3
+    fwd = s0*np.exp((r-q)*T)
+    K = np.linspace(kmin*fwd,kmax*fwd,100)
     option_params = (s0, r, q)
-    heston_params = (0.04, 2.1, 0.05, 1.6, -0.7, 0.0)
-    K = np.linspace(100, 200, 100)
+    heston_params = (params['v0'], params['kappa'], params['theta'], params['sigma'], params['rho'], 0.0)
 
-    t0 = datetime.now()
-    prices = vanilla_price(T, K, option_params, heston_params, N=64)
-    t1 = datetime.now()
-
-    print(f"Heston P1/P2 computation time: {np.round((t1 - t0).total_seconds() * 1000, 2)} ms")
+    pr = cProfile.Profile()
+    pr.enable()
+    prices = vanilla_price(T, K, option_params, heston_params, N=185)
+    pr.disable()
+    s = io.StringIO()
+    (pstats.Stats(pr, stream=s)
+        .strip_dirs()
+        .sort_stats("tottime")
+        .print_stats(5))
+    print(s.getvalue())
 
     plt.figure(figsize=(7, 4))
     plt.plot(K, prices, "o-", color="tab:blue", label="Heston (Gauss-Laguerre)")
