@@ -1,6 +1,6 @@
 # Heston Pricer & Calibration Toolkit
 
-Vectorized Heston (1993) option pricer and full calibration pipeline for implied volatility surfaces, implemented as a reusable Python package using a modern `src/` layout.
+Vectorized Heston (1993) option pricer and full calibration pipeline for implied volatility surfaces, implemented as a reusable Python package.
 
 The project is designed for robust calibration, numerical stability, and practical use in equity derivatives research.
 
@@ -44,7 +44,7 @@ heston-model-calibration/
             ├── __init__.py
             └── market_data_preprocessing.py
 
-The project follows a src-based package layout to prevent accidental imports from the working directory and to enforce correct installation via pip.
+The project follows a package layout to prevent accidental imports from the working directory and to enforce correct installation via pip.
 
 ---
 
@@ -94,3 +94,9 @@ Ortiz Ramírez, A., Venegas Martínez, F., & Martínez Palacios, M. T. V. (2021)
 Parameter calibration of stochastic volatility Heston’s model: constrained optimization vs. differential evolution.
 Accounting and Management, 67(1), 309.
 https://doi.org/10.22201/fca.24488410e.2022.2789
+
+
+Boyarchenko, S. & Levendorskii, S. (2019).
+Sinh-acceleration: Efficient Evaluation of Probability Distributions, Option Pricing, and Monte Carlo Simulations.
+International Journal of Theoretical and Applied Finance, 03(22), 1950011.
+https://doi.org/10.1142/S0219024919500110
