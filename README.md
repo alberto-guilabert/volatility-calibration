@@ -21,6 +21,7 @@ The project is designed for robust calibration, numerical stability, and practic
 
 ## Repository Structure
 
+```text
 heston-model-calibration/
 ├── pyproject.toml
 ├── README.md
