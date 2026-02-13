@@ -202,14 +202,30 @@ df["Vega"] = df.apply(
 ########################################################################
 
 
+# ---- Parameter mapping (single source of truth) ----
+PARAM_KEYS = ("v0", "kappa", "theta", "sigma", "rho")
+
+def vec_to_params(x: np.ndarray) -> dict:
+    x = np.asarray(x, dtype=float).ravel()
+    if x.size != len(PARAM_KEYS):
+        raise ValueError(f"Expected {len(PARAM_KEYS)} params, got {x.size}")
+    return dict(zip(PARAM_KEYS, map(float, x)))
+
+def params_to_vec(p: dict) -> np.ndarray:
+    return np.array([p[k] for k in PARAM_KEYS], dtype=float)
+
+
+
 ########################################################################
 ########################### LOSS FUNCTION ##############################
-def loss_function(heston_params, df, market_prices, vega_floor=1e-12):
+def loss_function(x, df, market_prices, vega_floor=1e-12):
     """
     Heston calibration loss:
       - Default: price error weighted by vega (prevents very cheap OTM options dominating).
       - Vectorized by maturity: reuse one CF per T for all strikes K at that T.
     """
+    heston_params = vec_to_params(x)
+
     # Extract numpy arrays for speed
     T = df['To expiry'].to_numpy(dtype=float)
     K = df['Strike'].to_numpy(dtype=float)
@@ -279,7 +295,7 @@ def callback_ga(xk, convergence):
     elapsed = (datetime.now() - init_time).total_seconds()
     print(f"Iteration {state['iters']:>3} — Elapsed: {elapsed*1000:.2f} ms — "
           f"Loss: {cur:.6e} — "
-          f"Stale: {state['stale']} — Params: {xk}")
+          f"Stale: {state['stale']} — Params: {vec_to_params(xk)}")
 
     # Early-stopping criteria
     if (MAX_SECONDS_CB is not None) and (elapsed >= MAX_SECONDS_CB):
@@ -317,7 +333,8 @@ theta_init = v0_init
 kappa_init = 3.0
 sigma_init = 0.5
 rho_init = -0.5
-x0 = [v0_init, kappa_init, theta_init, sigma_init, rho_init, 0.0]  # lambda = 0 (risk-neutral)
+x0 = np.array([v0_init, kappa_init, theta_init, sigma_init, rho_init], dtype=float)
+print("Initial params dict:", vec_to_params(x0))
 
 # Parameter bounds
 bounds = [
@@ -326,7 +343,6 @@ bounds = [
     (1e-4, 1),    # theta >= 0
     (1e-4, 2),    # sigma >= 0
     (-0.9, 0.1),  # rho   in (-1, 1)
-    (-0.0, 0.0),  # lambda fixed to 0
 ]
 ########################################################################
 
@@ -334,24 +350,29 @@ bounds = [
 ########################################################################
 ############################## CHECKS ##################################
 # Put/Call parity under Heston with the initial seed:
+seed_params = vec_to_params(x0)
+
 heston_calls = df.apply(
     lambda row: hp.vanilla_price(
         T=row['To expiry'],
         K=row['Strike'],
         option_params=(S0, row['Risk Free'], row['Impl (Yld)']),
-        heston_params=x0,
-        option_type="call"
+        heston_params=seed_params,
+        option_type="call",
+        N=185,
     ),
     axis=1
 )
+
 
 heston_puts = df.apply(
     lambda row: hp.vanilla_price(
         T=row['To expiry'],
         K=row['Strike'],
         option_params=(S0, row['Risk Free'], row['Impl (Yld)']),
-        heston_params=x0,
-        option_type="put"
+        heston_params=seed_params,
+        option_type="put",
+        N=185,
     ),
     axis=1
 )
@@ -395,13 +416,16 @@ result = minimize(
     callback=callback
 )
 
-optimal_heston = result.x
-optimal_loss = result.fun
-print("\nOptimized parameters:", optimal_heston)
-print("Final loss:", optimal_loss)
+optimal_vec = result.x
+optimal_params = vec_to_params(optimal_vec)
 
-# Feller condition (2*kappa*theta > sigma^2)
-v0_opt, kappa_opt, theta_opt, sigma_opt, rho_opt, lambda_opt = optimal_heston
+print("Optimized parameters (dict):", optimal_params)
+print("Final loss:", float(result.fun))
+
+# Feller
+kappa_opt = optimal_params["kappa"]
+theta_opt = optimal_params["theta"]
+sigma_opt = optimal_params["sigma"]
 print("Feller condition:", bool(2*kappa_opt*theta_opt > sigma_opt**2))
 ########################################################################
 
@@ -413,7 +437,7 @@ df['Heston price'] = df.apply(
         T=row['To expiry'],
         K=row['Strike'],
         option_params=(S0, row['Risk Free'], row['Impl (Yld)']),
-        heston_params=optimal_heston,
+        heston_params=optimal_params,
         option_type=row['Option type'],
         N=128
     ),
@@ -475,7 +499,7 @@ for Tj in sorted(df['To expiry'].unique()):
         hp.vanilla_price(
             T=Tj, K=Kk,
             option_params=(S0, rj, qj),
-            heston_params=optimal_heston,
+            heston_params=optimal_params,
             option_type=otype
         )
         for Kk, otype in zip(K_grid, opt_type_grid)
