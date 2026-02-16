@@ -10,7 +10,11 @@ from scipy.special import lambertw
 # ======================================================================================
 # Lambert solver for (3.26): A*x + ln(x) = C  (A>0, x>0)
 # ======================================================================================
-def solve_lambda1_lambert(A: np.ndarray, C: np.ndarray) -> np.ndarray:
+def solve_lambda1_lambert(A: np.ndarray,
+                          C: np.ndarray,
+                          optional_newton_refinement: bool = False,
+                          newton_steps: int = 2
+                          ) -> np.ndarray:
     """
     Solve A*x + ln(x) = C for x>0 using the principal LambertW branch:
       x = W(A*exp(C)) / A
@@ -27,12 +31,13 @@ def solve_lambda1_lambert(A: np.ndarray, C: np.ndarray) -> np.ndarray:
     W = lambertw(z)  # principal branch W0
     x = np.real(W) / A
 
-    # Optional Newton refinement (disabled to preserve current behavior):
-    # x = np.maximum(x, 1e-14)
-    # for _ in range(2):
-    #     Fx  = A * x + np.log(x) - C
-    #     Fpx = A + 1 / x
-    #     x = np.maximum(x - Fx / Fpx, 1e-14)
+    if optional_newton_refinement:
+        newton_steps = int(max(newton_steps, 0))
+        x = np.maximum(x, 1e-14)
+        for _ in range(newton_steps):
+            Fx  = A * x + np.log(x) - C
+            Fpx = A + 1 / x
+            x = np.maximum(x - Fx / Fpx, 1e-14)
 
     return x
 
@@ -228,10 +233,11 @@ def compute_price_heston_sinh(
     return call, put, covered_call
 
 
-def vanilla_price(T: float, K: np.ndarray, option_params: tuple, heston_params: dict, option_type: np.ndarray, N):
+def vanilla_price(T: float, K: np.ndarray, option_params: tuple, heston_params: dict, option_type: np.ndarray = "call"):
     """Convenience wrapper: returns (calls, puts, covered_call) for given strike grid."""
     spot, r, q = option_params
     sinh_cfg, trap_cfg = sinh_trap_params_heston(T, K, spot, r, q, heston_params, eps=1e-12, safety=0.95)
+
     calls, puts, _ = compute_price_heston_sinh(T, K, spot, r, q, heston_params, sinh_cfg, trap_cfg)
     return np.where(option_type == "call", calls, puts)
 
@@ -249,14 +255,16 @@ if __name__ == "__main__":
     option_params = (spot, r, q)
 
     fwd = spot * np.exp((r - q) * tau)
-    K = np.linspace(0.7 * fwd, 1.3 * fwd, 100)
+    K = np.linspace(0.9 * fwd, 1.1 * fwd, 100)
+    mness = K/fwd
+    option_type = np.where(mness < 1, "put", "call")
 
-    nruns = 10_000
+    nruns = 1
     n_opts = K.size
 
     t0 = time.perf_counter()
     for _ in range(nruns):
-        calls, _, _ = vanilla_price(tau, K, option_params, heston_params)
+        prices = vanilla_price(tau, K, option_params, heston_params, option_type)
     t1 = time.perf_counter()
 
     dt = t1 - t0
@@ -267,13 +275,16 @@ if __name__ == "__main__":
     print(f"Mean time per run: {mean_per_run*1e3:.2f} ms")
     print(f"Mean time per option: {mean_per_option*1e6:.3f} µs/option  (n_opts={n_opts})")
 
-
     import matplotlib.pyplot as plt
+    option_type = np.asarray(option_type)
+    mask_call = option_type == "call"
+    mask_put  = option_type == "put"
     plt.figure(figsize=(7, 4))
-    plt.plot(K, calls, "o-", color="tab:blue", label="Heston (Gauss-Laguerre)")
-    plt.xlabel("Strike")
+    plt.plot(mness[mask_call],prices[mask_call],"o",color="tab:blue",label="Call")
+    plt.plot(mness[mask_put],prices[mask_put],"o",color="tab:orange",label="Put")
+    plt.xlabel("Moneyness [K/F]")
     plt.ylabel("Option Price")
-    plt.title("Heston Model - European Call Prices")
+    plt.title("European Option Prices - Heston Model - Sinh-acceleration pricing")
     plt.grid(True, alpha=0.3)
     plt.legend()
     plt.tight_layout()

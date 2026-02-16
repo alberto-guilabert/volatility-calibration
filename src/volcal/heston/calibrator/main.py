@@ -12,7 +12,7 @@ import os
 # Project modules
 from volcal.market_data.preprocessing import DataLoader
 from volcal.utils import black_scholes as bs
-import volcal.heston.pricer.laguerre as hp
+import volcal.heston.pricer.laguerre.price as hp
 
 
 ########################################################################
