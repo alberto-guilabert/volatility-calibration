@@ -10,9 +10,9 @@ from pathlib import Path
 import os
 
 # Project modules
-from market_data import preprocessing
-from utils import black_scholes as bs
-import heston.pricer.laguerre as hp
+from volcal.market_data import preprocessing
+from volcal.utils import black_scholes as bs
+import volcal.heston.pricer.laguerre as hp
 
 
 ########################################################################
@@ -20,14 +20,10 @@ import heston.pricer.laguerre as hp
 # Volatility file & folder:
 # - 'book_name' must exist inside 'folder_name'.
 # - preprocessing.load_iv_table returns: Spot (S0), valuation date (act_date), and adapted DataFrame.
-# Ruta a este archivo
-THIS_FILE = Path(__file__).resolve()
-
-# Raíz del proyecto (repo)
-PROJECT_ROOT = THIS_FILE.parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[4]   # .../volcal
 
 # Ruta al Excel
-DATA_DIR = PROJECT_ROOT / "data" / "spx"
+DATA_DIR = REPO_ROOT / "data" / "spx"
 BOOK_NAME = 'SPX_17_10_25.xlsx'
 SHEET_NAME = 'Mid'
 folder_name = ''
