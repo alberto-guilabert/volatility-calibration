@@ -21,16 +21,19 @@ The project is designed for robust calibration, numerical stability, and practic
 - Heston (1993)
   - Gauss–Laguerre pricer
   - Sinh-acceleration pricer
+  - Full implied-volatility calibration
 
 - SABR (2002)
   - Hagan approximation pricer
+  - Dynamic (per-maturity) SABR calibration with parameter continuity across tenors.
 
 
 ### Roadmap
-- Rough Heston
-- SABR / Dynamic SABR
-- Local volatility (Dupire)
-- Stochastic local volatility (SLV)
+- Add calibration accuracy and benchmark routines
+- Add new models
+    - Local volatility (Dupire)
+    - Stochastic local volatility (SLV)
+    - Rough Heston / Bergomi
 
 ---
 
