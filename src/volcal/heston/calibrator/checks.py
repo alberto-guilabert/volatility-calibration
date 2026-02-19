@@ -283,7 +283,7 @@ def plot_iv_smiles_vs_bid_ask(
         # ---------------- Plot ----------------
         plt.figure()
         exp_label = str(aux["Expiry"].iloc[0]) if "Expiry" in aux.columns else f"T={Tj:.6f}"
-        plt.title(f"{title_prefix} — {exp_label}")
+        plt.title(f"{title_prefix} | Tenor: {exp_label}")
 
         plt.errorbar(
             100 * mn_mkt,
@@ -298,7 +298,7 @@ def plot_iv_smiles_vs_bid_ask(
         plt.plot(100 * mn_grid, 100 * ivs_grid, label="Heston IV")
 
         plt.xlabel("Moneyness K/F (%)")
-        plt.ylabel("IV (%)")
+        plt.ylabel("Implied volatility (%)")
         plt.legend()
         plt.tight_layout()
 

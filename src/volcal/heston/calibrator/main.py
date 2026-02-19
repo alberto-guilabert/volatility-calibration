@@ -165,6 +165,7 @@ df_checked = add_model_columns(
     heston_params=optimal_params,
 )
 
+underlying_text = BOOK_NAME.split('_')[0]
 plot_iv_smiles_vs_bid_ask(
     df=df_checked,
     pricer=pricer,
@@ -173,4 +174,5 @@ plot_iv_smiles_vs_bid_ask(
     S0=float(S0),
     act_date=act_date,
     heston_params=optimal_params,
+    title_prefix=f"{underlying_text} @ {act_date.strftime("%d/%m/%Y")}"
 )
