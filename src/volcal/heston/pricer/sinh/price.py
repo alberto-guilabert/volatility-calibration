@@ -233,11 +233,16 @@ def compute_price_heston_sinh(
     return call, put, covered_call
 
 
-def vanilla_price(T: float, K: np.ndarray, option_params: tuple, heston_params: dict, option_type: np.ndarray = "call"):
-    """Convenience wrapper: returns (calls, puts, covered_call) for given strike grid."""
+def vanilla_price(T: float,
+                  K: np.ndarray,
+                  option_params: tuple,
+                  heston_params: dict,
+                  option_type: np.ndarray = "call",
+                  eps: float = 1e-12,
+                  safety: float = 0.95):
+    
     spot, r, q = option_params
-    sinh_cfg, trap_cfg = sinh_trap_params_heston(T, K, spot, r, q, heston_params, eps=1e-12, safety=0.95)
-
+    sinh_cfg, trap_cfg = sinh_trap_params_heston(T, K, spot, r, q, heston_params, eps=eps, safety=safety)
     calls, puts, _ = compute_price_heston_sinh(T, K, spot, r, q, heston_params, sinh_cfg, trap_cfg)
     return np.where(option_type == "call", calls, puts)
 
