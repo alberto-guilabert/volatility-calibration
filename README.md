@@ -48,19 +48,27 @@ volcal/                                     (repo root)
 │   |   └── SPX_17_10_25.xlsx
 |   └── googl/
 |       └── GOOGL_16_12_25.xlsx
+├───docs/
+│   └───img/                                (calibration accuracy figures)
 ├── examples/                               (usage examples / notebooks)
 └── src/                                    (Python package contents)
     └── volcal/                             (volatility calibration package)
-        |
-        ├── heston/
+        ├── heston/                         (heston calibrator and pricer module)
+        │   ├── README.md
         |   ├── calibrator/
+        |   |   ├── callback.py
+        |   |   ├── checks.py
+        |   |   ├── loss.py
+        |   |   ├── refine_data.py
+        |   |   ├── reporting.py
         |   │   └── main.py
         |   └── pricer/
+        |       ├── main.py
         |       ├── laguerre/
         |       |   └── price.py
         |       └── sinh/
         |           └── price.py
-        ├── sabr/
+        ├── sabr/                           (sabr calibrator and pricer module)
         |   ├── calibrator/
         |   └── pricer/
         |       └── hagan/
