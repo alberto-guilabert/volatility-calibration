@@ -2,18 +2,40 @@
 
 Implementation of the Heston (1993) stochastic volatility model.
 
-## Pricing engines
+### Pricing engines
 - Gauss–Laguerre quadrature
 - Sinh-accelerated contour integration
 
-## Calibration
+### Calibration
 - Global + local optimization on implied-volatility surfaces
 
-## Conventions
+### Conventions
 - Log-forward formulation
 - Continuous dividend yield
 
-### Calibration output (IV smile fit)
+### Module structre
+
+```text
+heston/
+├── README.md
+├── calibrator/
+|   ├── callback.py
+|   ├── checks.py
+|   ├── loss.py
+|   ├── refine_data.py
+|   ├── reporting.py
+│   └── main.py
+└── pricer/
+    ├── main.py
+    ├── laguerre/
+    |   └── price.py
+    └── sinh/
+        └── price.py
+```
+
+---
+
+## Calibration output (IV smile fit)
 
 <p align="center">
   <img src="../../../docs/img/fit_iv_smile_spx_17_10_25_3M.png" width="400" alt="smile fit - 17/10/2025 - tenor 3M" style="margin-right: 24px;" />
@@ -118,6 +140,8 @@ IV NaNs       : 0 / 77
 Plot — IV smiles vs bid/ask (mid ± bid/ask) + model IV
 ==============================================================================================
 ```
+
+---
 
 ## References
 

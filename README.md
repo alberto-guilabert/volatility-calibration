@@ -43,40 +43,15 @@ The project is designed for robust calibration, numerical stability, and practic
 volcal/                                     (repo root)
 ├── pyproject.toml
 ├── README.md
-├── data/                                   (example market data, not packaged)
-│   ├── spx/
-│   |   └── SPX_17_10_25.xlsx
-|   └── googl/
-|       └── GOOGL_16_12_25.xlsx
+├── data/                                   (example market data)
 ├───docs/
-│   └───img/                                (calibration accuracy figures)
 ├── examples/                               (usage examples / notebooks)
 └── src/                                    (Python package contents)
     └── volcal/                             (volatility calibration package)
         ├── heston/                         (heston calibrator and pricer module)
-        │   ├── README.md
-        |   ├── calibrator/
-        |   |   ├── callback.py
-        |   |   ├── checks.py
-        |   |   ├── loss.py
-        |   |   ├── refine_data.py
-        |   |   ├── reporting.py
-        |   │   └── main.py
-        |   └── pricer/
-        |       ├── main.py
-        |       ├── laguerre/
-        |       |   └── price.py
-        |       └── sinh/
-        |           └── price.py
         ├── sabr/                           (sabr calibrator and pricer module)
-        |   ├── calibrator/
-        |   └── pricer/
-        |       └── hagan/
-        |           └── price.py
         ├── utils/                          (shared utilities)
-        |   └── black_scholes.py
         └── market_data/                    (data adapters & preprocessing)
-            └── preprocessing.py
 
 ```
 

@@ -2,15 +2,28 @@
 
 Implementation of the SABR stochastic volatility model.
 
-## Implied-volatility formula
+### Pricing engines
 - Hagan et al. (2002) asymptotic expansion
 
-## Calibration
-- Smile calibration for fixed maturities
+### Calibration
+- Global + local optimization on implied-volatility surfaces
 
-## Conventions
+### Conventions
 - Forward-based formulation
-- Log-moneyness
+- Continuous dividend yield
+
+---
+
+## Module structure
+```text
+sabr/
+├── calibrator/
+└── pricer/
+    └── hagan/
+        └── price.py
+```
+
+---
 
 ## References
 Hagan, P., Kumar, D., Lesniewski, A., and Woodward, D. (2002). 
