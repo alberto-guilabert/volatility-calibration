@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/header/header.png" alt="Header" width="100%">
+</p>
+
 # Volatility Models: Pricing & Calibration Framework
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
