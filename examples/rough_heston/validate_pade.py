@@ -1,4 +1,4 @@
-"""Reproduce Phase-2 diagnostics; run with PYTHONPATH=src:tests/rough_heston.
+"""Run with PYTHONPATH=src:tests/rough_heston.
 
 Use NUMBA_NUM_THREADS=2 OPENBLAS_NUM_THREADS=1 for the recorded benchmark.
 No pricing, calibration, or automatic accuracy refinement is performed.
