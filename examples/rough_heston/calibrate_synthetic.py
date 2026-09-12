@@ -1,9 +1,4 @@
-"""Phase-5 synthetic experiment. No market ingestion or plotting.
-
-PYTHONPATH=src OPENBLAS_NUM_THREADS=1 NUMBA_NUM_THREADS=2 python examples/rough_heston/calibrate_synthetic.py
-Add --quick for the small CI-sized optimizer budget, --cross for an Adams
-market surface and independent Adams repricing, --refine for post-fit refinement.
-"""
+"""Test. No market ingestion or plotting."""
 import argparse
 from dataclasses import asdict
 import json
