@@ -144,7 +144,7 @@ def _next(pricer, stage, policy):
 
 
 def refine_prices(pricer, *, T, K, option_params, rough_heston_params,
-                  option_type='call', config=RefinementConfig(), raise_on_failure=False):
+                  option_type='call', config=RefinementConfig(), raise_on_failure=False, F=None):
     """Return immutable snapshots (flat price tuples, including scalar batches).
 
     Each stage needs a successful comparison; reaching a cap is not convergence.
@@ -157,7 +157,8 @@ def refine_prices(pricer, *, T, K, option_params, rough_heston_params,
     if not isinstance(pricer, RoughHestonPricer) or not isinstance(config, RefinementConfig):
         raise TypeError('expected RoughHestonPricer and RefinementConfig')
     from .diagnostics import no_arbitrage_bounds
-    no_arbitrage_bounds(T=T, K=K, option_params=option_params, option_type=option_type)
+    forward = {} if F is None else {'F': F}
+    no_arbitrage_bounds(T=T, K=K, option_params=option_params, option_type=option_type, **forward)
     from ..params import RoughHestonParams
     if not isinstance(rough_heston_params, RoughHestonParams):
         raise TypeError('rough_heston_params must be RoughHestonParams')
@@ -184,7 +185,7 @@ def refine_prices(pricer, *, T, K, option_params, rough_heston_params,
             try:
                 both = np.asarray(candidate.vanilla_price(T=T, K=np.concatenate([k, k]),
                     option_params=option_params, rough_heston_params=rough_heston_params,
-                    option_type=np.array(['call']*len(k)+['put']*len(k))))
+                    option_type=np.array(['call']*len(k)+['put']*len(k)), **forward))
                 if both.shape != (2*len(k),):
                     raise FloatingPointError('unexpected price output shape')
                 calls, puts = np.split(both, 2)
@@ -192,13 +193,14 @@ def refine_prices(pricer, *, T, K, option_params, rough_heston_params,
                 ds.append(finite_values(both))
                 for label, a in [('call', calls), ('put', puts)]:
                     ds.append(price_bounds(a, T=T, K=k, option_params=option_params,
-                                           option_type=label, atol=config.sanity_atol))
+                                           option_type=label, atol=config.sanity_atol, **forward))
                     if np.any((a < 0) & (a >= -config.sanity_atol)):
                         notes.append(f'tiny negative {label} price retained')
                     unique, indices = np.unique(k, return_index=True)
                     ds.append(strike_monotonicity(unique, a[indices], option_type=label, atol=config.sanity_atol))
                     ds.append(strike_convexity(unique, a[indices], atol=config.sanity_atol))
-                ds.append(put_call_parity(calls, puts, T=T, K=k, option_params=option_params, atol=config.sanity_atol))
+                ds.append(put_call_parity(calls, puts, T=T, K=k, option_params=option_params,
+                                        atol=config.sanity_atol, **forward))
                 if any(not d.passed for d in ds):
                     failure = 'financial/nonfinite diagnostics failed: ' + ', '.join(d.name for d in ds if not d.passed)
             except FloatingPointError as exc:

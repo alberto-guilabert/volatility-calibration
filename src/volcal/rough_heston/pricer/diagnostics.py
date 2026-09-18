@@ -29,7 +29,7 @@ def finite_values(values):
     return _report('finite_values', a, ~np.isfinite(a))
 
 
-def no_arbitrage_bounds(*, T, K, option_params, option_type='call'):
+def no_arbitrage_bounds(*, T, K, option_params, option_type='call', F=None):
     from .sinh import _real_array
     k = _real_array(K, 'K')
     market = _real_array(option_params, 'option_params')
@@ -43,7 +43,11 @@ def no_arbitrage_bounds(*, T, K, option_params, option_type='call'):
         raise ValueError('option_type must match strikes')
     if not np.all((types == 'call') | (types == 'put')):
         raise ValueError('invalid option_type')
-    s = market[0]*np.exp(-market[2]*t)
+    if F is not None:
+        F = _real_array(F, 'F')
+        if F.ndim or F <= 0:
+            raise ValueError('F must be a positive scalar')
+    s = market[0]*np.exp(-market[2]*t) if F is None else F*np.exp(-market[1]*t)
     d = k*np.exp(-market[1]*t)
     if not np.all(np.isfinite(d)) or not np.isfinite(s):
         raise ValueError('nonfinite discounted bounds')
@@ -60,15 +64,17 @@ def price_bounds(prices, *, atol=1e-8, **kwargs):
     return _report('price_bounds', excess, ~np.isfinite(a) | (excess > atol))
 
 
-def put_call_parity(calls, puts, *, T, K, option_params, atol=1e-8):
+def put_call_parity(calls, puts, *, T, K, option_params, atol=1e-8, F=None):
     _tolerance(atol)
     # Validate the common financial inputs through the bounds API.
-    no_arbitrage_bounds(T=T, K=K, option_params=option_params)
+    no_arbitrage_bounds(T=T, K=K, option_params=option_params, F=F)
     c, p, k = np.asarray(calls), np.asarray(puts), np.asarray(K)
     if c.shape != k.shape or p.shape != k.shape:
         raise ValueError('calls and puts must match strikes')
     s, r, q = option_params
-    residual = c-p-(s*np.exp(-q*T)-k*np.exp(-r*T))
+    parity = (s*np.exp(-q*T)-k*np.exp(-r*T) if F is None
+              else np.exp(-r*T)*(F-k))
+    residual = c-p-parity
     return _report('put_call_parity', residual, ~np.isfinite(residual) | (abs(residual) > atol))
 
 

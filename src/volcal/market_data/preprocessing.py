@@ -9,6 +9,11 @@ class DataLoader:
     DATA_DIR: str
     BOOK_NAME: str
 
+    def load_surface(self, schema, sheet_name='Mid'):
+        """Read with explicit axis/units/day count; legacy load_iv_table is unchanged."""
+        from .schema import load_surface
+        return load_surface(os.path.join(self.DATA_DIR, self.BOOK_NAME), sheet_name, schema)
+
     def load_iv_table(self, SHEET_NAME: str = 'Mid'):
         # Load Excel file
         data_route = os.path.join(self.DATA_DIR, self.BOOK_NAME)
