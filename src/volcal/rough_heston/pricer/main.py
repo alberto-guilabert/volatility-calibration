@@ -57,7 +57,7 @@ class RoughHestonPricer:
             raise TypeError('integration_config must be SinhConfig')
 
     def vanilla_price(self, *, T, K, option_params, rough_heston_params,
-                      option_type='call'):
+                      option_type='call', F=None):
         if not isinstance(rough_heston_params, RoughHestonParams):
             raise TypeError('rough_heston_params must be RoughHestonParams')
         def cf(u):
@@ -67,5 +67,5 @@ class RoughHestonPricer:
                     picard_iterations=self.cf_config.picard_iterations)
             return rough_heston_cf_pade(u, T, rough_heston_params, order=self.cf_config.order)
         return vanilla_price_from_cf(cf, T=T, K=K, option_params=option_params,
-                                     option_type=option_type,
+                                     option_type=option_type, F=F,
                                      integration_config=self.integration_config)

@@ -2,7 +2,8 @@
 from dataclasses import dataclass
 from time import perf_counter
 import numpy as np
-from volcal.utils.black_scholes import vega
+from volcal.utils.black_scholes import vega, iv_solver
+from volcal.utils import black
 from ..pricer import RoughHestonPricer
 from .config import CalibrationConfig
 
@@ -15,6 +16,7 @@ class PreparedQuotes:
     price per unit decimal volatility. Supplied vega takes precedence over IV.
     IV/vega are optional for price MSE; normalized loss requires one of them.
     Every row has its own spot/r/q. Inputs are copied into immutable tuples.
+    Optional F is the authoritative forward, independent of source spot/r/q.
     """
     T: tuple
     K: tuple
@@ -25,12 +27,13 @@ class PreparedQuotes:
     market_price: tuple
     market_iv: object = None
     market_vega: object = None
+    F: object = None
 
     def __post_init__(self):
         size = None
         for name in self.__dataclass_fields__:
             value = getattr(self, name)
-            if value is None and name in ('market_iv', 'market_vega'):
+            if value is None and name in ('market_iv', 'market_vega', 'F'):
                 continue
             a = np.asarray(value)
             if a.ndim != 1 or not a.size or (size is not None and a.size != size):
@@ -43,7 +46,7 @@ class PreparedQuotes:
                 if a.dtype.kind not in 'iuf' or not np.all(np.isfinite(a)):
                     raise ValueError(f'{name} must be finite real values')
                 a = a.astype(float)
-                if name in ('T', 'K', 'S0', 'market_iv') and np.any(a <= 0):
+                if name in ('T', 'K', 'S0', 'market_iv', 'F') and np.any(a <= 0):
                     raise ValueError(f'{name} must be positive')
                 if name in ('market_price', 'market_vega') and np.any(a < 0):
                     raise ValueError(f'{name} must be nonnegative')
@@ -52,8 +55,23 @@ class PreparedQuotes:
     def groups(self):
         groups = {}
         for i, key in enumerate(zip(self.T, self.S0, self.r, self.q)):
+            if self.F is not None:
+                key += (self.F[i],)
             groups.setdefault(key, []).append(i)
         return tuple((key, tuple(indices)) for key, indices in groups.items())
+
+    def forward_kwargs(self, index):
+        """Omit the keyword on the legacy path, including third-party callers."""
+        return {} if self.F is None else {'F': self.F[index]}
+
+
+def quote_iv(quotes, index, price):
+    """Invert with the same financial inputs as quote pricing and diagnostics."""
+    if quotes.F is not None:
+        return black.iv_solver(price, quotes.T[index], quotes.K[index],
+            F=quotes.F[index], r=quotes.r[index], option_type=quotes.option_type[index])
+    return iv_solver(price, quotes.T[index], quotes.K[index],
+        (quotes.S0[index], quotes.r[index], quotes.q[index]), quotes.option_type[index])
 
 
 @dataclass(frozen=True)
@@ -69,11 +87,12 @@ class InvalidPrices(FloatingPointError):
 
 def price_quotes(pricer, quotes, params, negative_tolerance=1e-8):
     prices = np.empty(len(quotes.T))
-    for (t, s, r, q), indices in quotes.groups():
+    for key, indices in quotes.groups():
+        t, s, r, q = key[:4]
         idx = np.asarray(indices)
         p = np.asarray(pricer.vanilla_price(T=t, K=np.asarray(quotes.K)[idx],
             option_params=(s, r, q), option_type=np.asarray(quotes.option_type)[idx],
-            rough_heston_params=params), dtype=float)
+            rough_heston_params=params, **quotes.forward_kwargs(indices[0])), dtype=float)
         if p.shape != idx.shape:
             raise InvalidPrices('inconsistent model price shape')
         if not np.all(np.isfinite(p)):
@@ -99,8 +118,11 @@ class CalibrationObjective:
             if quotes.market_vega is not None:
                 raw = np.asarray(quotes.market_vega)
             elif quotes.market_iv is not None:
-                raw = vega(np.asarray(quotes.market_iv), np.asarray(quotes.T), np.asarray(quotes.K),
-                           (np.asarray(quotes.S0), np.asarray(quotes.r), np.asarray(quotes.q)))
+                if quotes.F is not None:
+                    raw = black.vega(quotes.market_iv, quotes.T, quotes.K, F=quotes.F, r=quotes.r)
+                else:
+                    raw = vega(np.asarray(quotes.market_iv), np.asarray(quotes.T), np.asarray(quotes.K),
+                               (np.asarray(quotes.S0), np.asarray(quotes.r), np.asarray(quotes.q)))
             else:
                 raise ValueError('normalized objective requires market_vega or market_iv')
             if not np.all(np.isfinite(raw)):

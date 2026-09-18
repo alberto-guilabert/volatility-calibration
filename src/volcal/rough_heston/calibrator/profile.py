@@ -16,7 +16,7 @@ import numpy as np
 from scipy.optimize import differential_evolution, least_squares
 
 from .config import CalibrationConfig
-from .loss import CalibrationObjective
+from .loss import CalibrationObjective, quote_iv
 from .pipeline import _reprice
 from ..params import RoughHestonParams
 from volcal.utils.black_scholes import iv_solver
@@ -57,11 +57,16 @@ def financial_metrics(repricing, quotes):
                max_price_error=float(np.max(np.abs(error))))
     errors = []
     for i, price in enumerate(repricing.prices):
-        args = (quotes.T[i], quotes.K[i],
-                (quotes.S0[i], quotes.r[i], quotes.q[i]), quotes.option_type[i])
         try:
-            market = quotes.market_iv[i] if quotes.market_iv is not None else iv_solver(quotes.market_price[i], *args)
-            error = (iv_solver(price, *args) - market) * 1e4
+            if quotes.F is None:
+                args = (quotes.T[i], quotes.K[i],
+                        (quotes.S0[i], quotes.r[i], quotes.q[i]), quotes.option_type[i])
+                market = quotes.market_iv[i] if quotes.market_iv is not None else iv_solver(quotes.market_price[i], *args)
+                model_iv = iv_solver(price, *args)
+            else:
+                market = quotes.market_iv[i] if quotes.market_iv is not None else quote_iv(quotes, i, quotes.market_price[i])
+                model_iv = quote_iv(quotes, i, price)
+            error = (model_iv - market) * 1e4
             if np.isfinite(error):
                 errors.append(error)
         except (ValueError, FloatingPointError, OverflowError):

@@ -70,11 +70,13 @@ def _real_array(value, name):
 
 
 def vanilla_price_from_cf(cf, *, T, K, option_params, option_type='call',
-                          integration_config=SinhConfig()):
+                          integration_config=SinhConfig(), F=None):
     """Price scalar/1-D strikes with scalar or matching call/put labels.
 
     cf(u) is the normalized CF at T (bind maturity in the callable).
-    T=0 returns intrinsic value without evaluating cf. Explicit numerical
+    F, when supplied, is a positive scalar authoritative forward; spot and q
+    remain source inputs and do not determine carry. T=0 returns intrinsic
+    against F (or spot when F is absent) without evaluating cf. Explicit numerical
     resolution is the caller's responsibility; finite prices are not clipped.
     """
     maturity = _real_array(T, 'T')
@@ -95,14 +97,21 @@ def vanilla_price_from_cf(cf, *, T, K, option_params, option_type='call',
         raise TypeError('integration_config must be SinhConfig')
     T = float(maturity)
     S0, r, q = market
+    if F is not None:
+        F = _real_array(F, 'F')
+        if F.ndim or F <= 0:
+            raise ValueError('F must be a positive scalar')
+        F = float(F)
     if T == 0:
-        result = np.where(types == 'call', np.maximum(S0-strikes, 0),
-                          np.maximum(strikes-S0, 0))
+        underlying = S0 if F is None else F
+        result = np.where(types == 'call', np.maximum(underlying-strikes, 0),
+                          np.maximum(strikes-underlying, 0))
     else:
         with np.errstate(over='ignore', invalid='ignore'):
-            disc_spot = S0*np.exp(-q*T)
+            disc_spot = S0*np.exp(-q*T) if F is None else F*np.exp(-r*T)
             disc_strikes = strikes*np.exp(-r*T)
-            m = np.log(S0)-np.log(strikes)+(r-q)*T
+            m = (np.log(S0)-np.log(strikes)+(r-q)*T if F is None
+                 else np.log(F)-np.log(strikes))
         if (not np.isfinite(disc_spot) or disc_spot <= 0
                 or not np.all(np.isfinite(disc_strikes)) or np.any(disc_strikes <= 0)
                 or not np.all(np.isfinite(m))):
