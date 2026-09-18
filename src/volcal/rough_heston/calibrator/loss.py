@@ -123,6 +123,17 @@ class CalibrationObjective:
         return value
 
     def __call__(self, vector):
+        return self._evaluate(vector, False)
+
+    def residuals(self, vector):
+        """Residual vector whose mean square is this exact scalar objective.
+
+        Uses the same pricing, failure policy and evaluation ledger. Invalid
+        evaluations return constant residuals with mean square failure_penalty.
+        """
+        return self._evaluate(vector, True)
+
+    def _evaluate(self, vector, residuals):
         start = perf_counter()
         self.evaluations += 1
         params = None
@@ -133,7 +144,8 @@ class CalibrationObjective:
             value = self.loss(prices)
             if value < self.best_loss:
                 self.best_loss, self.best_params = value, params
-            return value
+            return ((prices - np.asarray(self.quotes.market_price)) / self.scale
+                    if residuals else value)
         except (FloatingPointError, ValueError, OverflowError, np.linalg.LinAlgError) as exc:
             message = str(exc)
             category = ('invalid_prices' if isinstance(exc, InvalidPrices) else
@@ -141,6 +153,7 @@ class CalibrationObjective:
             full = tuple(params.to_vector()) if params is not None else tuple(
                 np.r_[self.config.fixed_H, vector] if self.config.fixed_H is not None else vector)
             self.failures.append(NumericalFailure(category, full, f'{type(exc).__name__}: {message}'))
-            return self.config.failure_penalty
+            return (np.full(len(self.scale), np.sqrt(self.config.failure_penalty))
+                    if residuals else self.config.failure_penalty)
         finally:
             self.seconds += perf_counter() - start
