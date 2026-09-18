@@ -3,26 +3,11 @@ import argparse
 from dataclasses import asdict
 import json
 import numpy as np
-from volcal.rough_heston import RoughHestonParams
 from volcal.rough_heston.pricer import (RoughHestonPricer, PadeConfig, AdamsConfig,
     SinhConfig, RefinementConfig, FourierRefinementConfig, refine_prices)
-from volcal.rough_heston.calibrator import PreparedQuotes, CalibrationConfig, calibrate
-from volcal.utils.black_scholes import iv_solver
+from volcal.rough_heston.calibrator import CalibrationConfig, calibrate
 
-TRUE_PARAMS = RoughHestonParams(.2, 1.5, .04, .4, .04, -.7)
-
-
-def synthetic_quotes(pricer, params=TRUE_PARAMS):
-    rows = []
-    for t, r, q in [(.25, .03, .01), (.75, .04, .015)]:
-        strikes = np.array([90., 100., 110., 90., 100., 110.])
-        types = np.array(['call'] * 3 + ['put'] * 3)
-        prices = pricer.vanilla_price(T=t, K=strikes, option_params=(100., r, q),
-            option_type=types, rough_heston_params=params)
-        for k, typ, price in zip(strikes, types, prices):
-            rows.append((t, k, 100., r, q, typ, price,
-                         iv_solver(price, t, k, (100., r, q), typ)))
-    return PreparedQuotes(*zip(*rows))
+from volcal.rough_heston.calibrator.synthetic import TRUE_PARAMS, synthetic_quotes
 
 
 def summary(result, truth=TRUE_PARAMS):
