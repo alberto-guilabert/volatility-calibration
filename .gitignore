@@ -16,3 +16,10 @@ env/
 .idea/
 .vscode/
 .DS_Store
+
+# Private development / research phase notes
+docs/rough_heston/phase*.md
+
+# Licensed/private market data
+data/**/*.xlsx
+data/**/*.xls
