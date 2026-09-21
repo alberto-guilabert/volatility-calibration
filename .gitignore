@@ -37,3 +37,7 @@ secrets*.yml
 # Local configuration
 *.local
 config.local.*
+
+# Licensed/private market data
+data/**/*.xlsx
+data/**/*.xls
