@@ -16,3 +16,24 @@ env/
 .idea/
 .vscode/
 .DS_Store
+
+# Secrets / environment
+.env
+.env.*
+!.env.example
+
+# Private keys / certificates
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Credentials / secrets
+credentials*.json
+secrets*.json
+secrets*.yaml
+secrets*.yml
+
+# Local configuration
+*.local
+config.local.*
