@@ -1,7 +1,7 @@
 # Volatility Models: Pricing & Calibration Framework
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![Last commit](https://img.shields.io/github/last-commit/qjant/volatility-calibration)
+![Last commit](https://img.shields.io/github/last-commit/alberto-guilabert/volatility-calibration)
 
 A modular Python framework for pricing and calibrating option pricing models,
 with an initial focus on stochastic volatility models.
