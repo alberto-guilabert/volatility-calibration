@@ -17,9 +17,33 @@ env/
 .vscode/
 .DS_Store
 
-# Private development / research phase notes
-docs/rough_heston/phase*.md
+# Secrets / environment
+.env
+.env.*
+!.env.example
+
+# Private keys / certificates
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Credentials / secrets
+credentials*.json
+secrets*.json
+secrets*.yaml
+secrets*.yml
+
+# Local configuration
+*.local
+config.local.*
 
 # Licensed/private market data
 data/**/*.xlsx
 data/**/*.xls
+
+# Private licensed market data
+/private-market-data/
+
+# Private development / research phase notes
+docs/rough_heston/phase*.md
